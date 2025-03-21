@@ -1,5 +1,5 @@
 class Sprite {
-    constructor({ position, src, frameRate = 1, animations, frameBuffer = 2, loop = 2, autoplay = true }) {
+    constructor({ position, src, frameRate = 1, animations, frameBuffer = 2, loop = 2, autoplay = true, onComplete = null }) {
         this.position = position
         this.image = new Image()
         this.image.src = src
@@ -11,6 +11,8 @@ class Sprite {
         this.elapsedFrames = 0
         this.loop = loop
         this.autoplay = autoplay
+        this.onComplete = onComplete
+        this.completed = false
         this.image.onload = () => {
             this.loaded = true
             this.width = this.image.width / this.frameRate
@@ -48,6 +50,14 @@ class Sprite {
         if(this.elapsedFrames % this.frameBuffer === 0) {
             if(this.currentFrame < this.frameRate - 1) this.currentFrame++
             else if(this.loop) this.currentFrame = 0
+        }
+
+        if(this.onComplete && this.currentFrame === this.frameRate - 1 && !this.completed) {
+            const result = this.onComplete()
+            this.completed = true
+            if (result !== undefined) {
+                return result
+            }
         }
     }
 }

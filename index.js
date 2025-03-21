@@ -4,23 +4,71 @@ const context = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
 
-const parsedCL1 = collisionsLevel1.parse2DA()
-const collisionBlocks = parsedCL1.createObjectsFrom2D()
+let parsedCL, collisionBlocks, background, doors
+const player = new Player({ })
 
-const backgroundLevel1 = new Sprite({ position: { x: 0, y: 0 }, src: 'assets/level_1.png' })
+let level = 1
+let levels = {
+    1: {
+        init: () => {
+            parsedCL = collisionsLevel1.parse2DA()
+            collisionBlocks = parsedCL.createObjectsFrom2D()
+            player.collisionBlocks = collisionBlocks
+            background = new Sprite({ position: { x: 0, y: 0 }, src: 'assets/level_1.png' })
+            doors = [
+                new Sprite({
+                    position: { x: 707, y: 273 },
+                    src: 'assets/door.png',
+                    frameRate: 5,
+                    frameBuffer: 12,
+                    loop: false,
+                    autoplay: false,
+                    onComplete: () => {
+                        gsap.to(overlay, {
+                            opacity: 1,
+                            onComplete: () => {
+                                level++
+                                levels[level].init()
+                                gsap.to(overlay, { opacity: 0 })
+                            }
+                        })
+                    }
+                })
+            ]
+        }
+    },
+    2: {
+        init: () => {
+            parsedCL = collisionsLevel2.parse2DA()
+            collisionBlocks = parsedCL.createObjectsFrom2D()
+            player.collisionBlocks = collisionBlocks
+            player.x = 8
+            player.y = 95
+            background = new Sprite({ position: { x: 0, y: 0 }, src: 'assets/level_2.png' })
+            doors = [
+                new Sprite({
+                    position: { x: 851, y: 82 },
+                    src: 'assets/door.png',
+                    frameRate: 5,
+                    frameBuffer: 12,
+                    loop: false,
+                    autoplay: false,
+                    onComplete: () => {
+                        gsap.to(overlay, {
+                            opacity: 1,
+                            onComplete: () => {
+                                level++
+                                levels[level].init()
+                            }
+                        })
+                    }
+                })
+            ]
+        }
+    }
+}
 
-const player = new Player({ collisionBlocks })
-
-const doors = [
-    new Sprite({
-        position: { x: 707, y: 273 },
-        src: 'assets/door.png',
-        frameRate: 5,
-        frameBuffer: 12,
-        loop: false,
-        autoplay: false
-    })
-]
+const overlay = { opacity: 0 }
 
 const keys = {
     w: false,
@@ -29,7 +77,7 @@ const keys = {
 }
 function animate() {
     window.requestAnimationFrame(animate)
-    backgroundLevel1.draw()
+    background.draw()
     collisionBlocks.forEach(block => block.draw())
     doors.forEach(door => door.draw())
 
@@ -39,6 +87,13 @@ function animate() {
 
     player.init()
     player.update()
+
+    context.save()
+    context.globalAlpha = overlay.opacity
+    context.fillStyle = 'rgb(63, 56, 81)'
+    context.fillRect(0, 0, 1024, 576)
+    context.restore()
 }
 
+levels[level].init()
 animate()

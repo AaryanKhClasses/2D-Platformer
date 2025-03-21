@@ -11,7 +11,6 @@ class Player {
         },
         this.gravity = 0.5,
         this.collisionBlocks = collisionBlocks
-        console.log(this.collisionBlocks)
     }
 
     init() {
